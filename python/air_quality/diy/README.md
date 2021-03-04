@@ -9,7 +9,7 @@ This example shows you how hard it can be to get notifications right, even for s
 ### Setup
 
 We assume that you have a [virtual environment](https://docs.python.org/3/tutorial/venv.html) setup.
-Then, open up your favorite terminal and `cd` to `examples/python/air_quality/basic`.
+Then, open up your favorite terminal and `cd` to `examples/python/air_quality/diy`.
 
 ```bash
 pip install -r requirements.txt
