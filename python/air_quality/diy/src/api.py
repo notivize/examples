@@ -32,7 +32,27 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+    user = crud.create_user(db=db, user=user)
+    user.send_welcome_email()
+    return user
+
+
+@app.patch("/users/", response_model=schemas.User)
+def update_user(user_id: int, user: schemas.UserPatch, db: Session = Depends(get_db)):
+    existing_user_with_new_email = crud.get_user_by_email(db, email=user.email)
+    if existing_user_with_new_email:
+        raise HTTPException(
+            status_code=400, detail="Email already registered by another user"
+        )
+    db_user = crud.get_user(db, user_id)
+    previous_email = db_user.email
+    updated_user = crud.update_user(
+        db=db,
+        user_id=user_id,
+        update_data=user.dict(exclude_unset=True),
+    )
+    updated_user.send_updated_email(previous_email)
+    return updated_user
 
 
 @app.get("/users/", response_model=List[schemas.User])
@@ -58,7 +78,9 @@ def update_sensor(
     sensor_id: int, sensor: schemas.SensorPatch, db: Session = Depends(get_db)
 ):
     updated_sensor = crud.update_sensor(
-        db, sensor_id=sensor_id, update_data=sensor.dict(exclude_unset=True)
+        db=db,
+        sensor_id=sensor_id,
+        update_data=sensor.dict(exclude_unset=True),
     )
     for aqi_alert_notification in updated_sensor.aqi_alert_notifications:
         aqi_alert_notification.maybe_send_notification()

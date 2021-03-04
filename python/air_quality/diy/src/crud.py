@@ -25,6 +25,13 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     return db_user
 
 
+def update_user(db: Session, user_id: int, update_data: dict) -> models.User:
+    query = db.query(models.User).filter(models.User.id == user_id)
+    query.update(update_data)
+    db.commit()
+    return query.first()
+
+
 def get_sensor(db: Session, sensor_id: int) -> Optional[models.Sensor]:
     return db.query(models.Sensor).filter(models.Sensor.id == sensor_id).first()
 
@@ -44,6 +51,7 @@ def create_sensor(db: Session, sensor: schemas.SensorCreate) -> models.Sensor:
 def update_sensor(db: Session, sensor_id: int, update_data: dict) -> models.Sensor:
     query = db.query(models.Sensor).filter(models.Sensor.id == sensor_id)
     query.update(update_data)
+    db.commit()
     return query.first()
 
 
