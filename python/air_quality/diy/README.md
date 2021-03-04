@@ -62,6 +62,8 @@ This tutorial will showcase 4 different notifications:
 
 ## Explore on your own
 
+Start the server with:
+
 ```bash
 uvicorn src.api:app
 ```
