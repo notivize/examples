@@ -8,7 +8,7 @@ This example shows you how hard it can be to get notifications right, even for s
 
 ### Database schema
 
-![Database schema](assets/db_schema.pdf)
+![Database schema](assets/db_schema.png)
 
 ### Setup
 
@@ -29,35 +29,35 @@ This tutorial will showcase 4 different notifications:
 
 ### 1. Start server
 
-![Start server](assets/1-Start server.png)
+![Start server](assets/1-start_server.png)
 
 ### 2. How to open a section in the explorer view to submit an api request
 
-![Open post user api section](assets/2-Try create user.png)
+![Open post user api section](assets/2-open_section.png)
 
 ### 3. Create a user
 
-![Create user](assets/3-User created.png)
+![Create user](assets/3-user_created.png)
 
 ### 4. Create a sensor
 
-![Create sensor](assets/4- Create sensor.png)
+![Create sensor](assets/4-create_sensor.png)
 
 ### 5 Create aqi alert
 
-![Create aqi alert](assets/5- Create aqi alert.png)
+![Create aqi alert](assets/5-create_aqi_alert.png)
 
 ### 6. Create aqi alert notification
 
-![Create aqi alert notification](assets/6- Create aqi alert notification.png)
+![Create aqi alert notification](assets/6-create_aqi_alert_notification.png)
 
 ### 7. Trigger aqi alert
 
-![Trigger aqi alert](assets/7- Trigger aqi alert.png)
+![Trigger aqi alert](assets/7-trigger_aqi_alert.png)
 
 ### 8. Update email
 
-![Update email](assets/8- Update email.png)
+![Update email](assets/8-update_email.png)
 
 
 ## Explore on your own
