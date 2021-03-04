@@ -19,6 +19,26 @@ class User(Base):
         "AQIAlertNotification", back_populates="user"
     )
 
+    def send_welcome_email(self):
+        # Here you would send the welcome email when the user is created
+        logging.info(f"Welcome {self.email}!")
+
+    def send_updated_email(self, previous_email):
+        # Here you would send an email to let the user know of the updated email
+        logging.info(
+            f"To: {previous_email}\n"
+            "Subject: Your email has been updated\n"
+            f"Body: Your email has been updated to {self.email}. If you didn't make "
+            "that change, please reach at to us here: support@notivize.com\n"
+        )
+        # And also ask them to verify their new email
+        logging.info(
+            f"To: {self.email}\n"
+            "Subject: Verify your email\n"
+            f"Body: Hi, please verify your email by clicking this link: "
+            "<a href='https://notivize.com/verify?email={self.email}'>Verify</a>\n"
+        )
+
 
 class Sensor(Base):
     __tablename__ = "sensors"

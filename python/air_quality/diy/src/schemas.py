@@ -27,7 +27,7 @@ class SensorBase(BaseModel):
 
 
 class SensorPatch(BaseModel):
-    aqi: Optional[int]
+    aqi: int
 
 
 class SensorCreate(SensorBase):
@@ -64,6 +64,9 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     pass
 
+
+class UserPatch(BaseModel):
+    email: str
 
 class User(UserBase):
     id: int
