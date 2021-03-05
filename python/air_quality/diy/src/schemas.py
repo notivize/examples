@@ -59,6 +59,7 @@ class AQIAlert(AQIAlertBase):
 
 class UserBase(BaseModel):
     email: str
+    phone: str
 
 
 class UserCreate(UserBase):
@@ -66,7 +67,9 @@ class UserCreate(UserBase):
 
 
 class UserPatch(BaseModel):
-    email: str
+    email: Optional[str]
+    phone: Optional[str]
+
 
 class User(UserBase):
     id: int

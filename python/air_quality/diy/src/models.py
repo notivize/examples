@@ -1,9 +1,12 @@
 import logging
+from http import HTTPStatus
 
+import requests
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
 
+from .config import settings
 from .database import Base
 
 logger = logging.getLogger(__name__)
@@ -14,30 +17,51 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True)
+    phone = Column(String)
 
     aqi_alert_notifications = relationship(
         "AQIAlertNotification", back_populates="user"
     )
 
     def send_welcome_email(self):
-        # Here you would send the welcome email when the user is created
-        logging.info(f"Welcome {self.email}!")
+        response = requests.post(
+            f"{settings.notivize_api_url}/applications/8060536a-b20a-4692-9794-075ff079d144/event_flows/d53b14aa-1882-48d6-9fd6-ac8c7fc61f99/events",  # noqa: E501
+            json={
+                "email": self.email,
+                "lifecycle_stage": "create",
+                "user_id": self.id,
+            },
+            headers={"Authorization": f"Bearer {settings.notivize_api_key}"},
+        )
+        assert response.status_code == HTTPStatus.ACCEPTED
+        self.send_verify_email()
+
+    def send_verify_email(self):
+        response = requests.post(
+            f"{settings.notivize_api_url}/applications/8060536a-b20a-4692-9794-075ff079d144/event_flows/b39dcc00-8331-4e34-9a53-ae9280e6110c/events",  # noqa: E501
+            json={
+                "email": self.email,
+                "lifecycle_stage": "update",
+            },
+            headers={"Authorization": f"Bearer {settings.notivize_api_key}"},
+        )
+
+        assert response.status_code == HTTPStatus.ACCEPTED
 
     def send_updated_email(self, previous_email):
-        # Here you would send an email to let the user know of the updated email
-        logging.info(
-            f"To: {previous_email}\n"
-            "Subject: Your email has been updated\n"
-            f"Body: Your email has been updated to {self.email}. If you didn't make "
-            "that change, please reach at to us here: support@notivize.com\n"
+        response = requests.post(
+            f"{settings.notivize_api_url}/applications/8060536a-b20a-4692-9794-075ff079d144/event_flows/b156d4a0-b40f-4562-9517-e074573e7676/events",  # noqa: E501
+            json={
+                "email": previous_email,
+                "email_has_changed": previous_email != self.email,
+                "new_email": self.email,
+                "user_id": self.id,
+            },
+            headers={"Authorization": f"Bearer {settings.notivize_api_key}"},
         )
-        # And also ask them to verify their new email
-        logging.info(
-            f"To: {self.email}\n"
-            "Subject: Verify your email\n"
-            f"Body: Hi, please verify your email by clicking this link: "
-            "<a href='https://notivize.com/verify?email={self.email}'>Verify</a>\n"
-        )
+        assert response.status_code == HTTPStatus.ACCEPTED
+
+        self.send_verify_email()
 
 
 class Sensor(Base):
@@ -80,17 +104,17 @@ class AQIAlertNotification(Base):
     alert = relationship("AQIAlert", back_populates="aqi_alert_notifications")
 
     def maybe_send_notification(self):
-        if self.sensor.aqi <= self.alert.threshold:
-            return
-
-        # Here you would setup your channel integration, for example:
-        # mailchimp, sendgrid, twilio, etc.
-        logger.warning(
-            "\n\n"
-            f"To: {self.user.email}\n"
-            f"Subject: Air Quality Index {self.alert.level.title()}!\n"
-            f"{self.alert.level.title()}! Air quality index at {self.sensor.city}, "
-            f"{self.sensor.zone} is above its threshold ({self.alert.threshold}): "
-            f"{self.sensor.aqi}"
-            "\n\n"
+        response = requests.post(
+            f"{settings.notivize_api_url}/applications/8060536a-b20a-4692-9794-075ff079d144/event_flows/bb0ada8d-c8db-4804-9baf-fa0d0e147a77/events",  # noqa: E501
+            json={
+                "phone": self.user.phone,
+                "aqi_alert_notification_id": self.id,
+                "alert_level": self.alert.level.title(),
+                "threshold": self.alert.threshold,
+                "aqi": self.sensor.aqi,
+                "city": self.sensor.city,
+                "zone": self.sensor.zone,
+            },
+            headers={"Authorization": f"Bearer {settings.notivize_api_key}"},
         )
+        assert response.status_code == HTTPStatus.ACCEPTED
