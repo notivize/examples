@@ -1,5 +1,6 @@
 import logging
 
+from datetime import datetime
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import ChoiceType
@@ -51,6 +52,26 @@ class Sensor(Base):
     aqi_alert_notifications = relationship(
         "AQIAlertNotification", back_populates="sensor"
     )
+    aqi_values = relationship(
+        "AQIAlertNotification", back_populates="sensor"
+    )
+
+    @property
+    def current_aqi_value(self):
+        return self.aqi_values.desc().first()
+
+    aqi_values = relationship("AQIValue", back_populates="sensor")
+
+
+class AQIValue(Base):
+    __tablename__ = "aqi_values"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sensor_id = Column(Integer, index=True)
+    value = Column(Integer)
+    created_at = DateTime(default=datetime.utcnow)
+
+    sensor = relationship("Sensor", back_populates="aqi_values")
 
 
 class AQIAlert(Base):
