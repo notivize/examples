@@ -59,7 +59,7 @@ class AQIAlert(AQIAlertBase):
 
 class UserBase(BaseModel):
     email: str
-    phone: str
+    phone: Optional[str]
 
 
 class UserCreate(UserBase):
