@@ -10,7 +10,9 @@ services:
       - upgrade
       - head
     volumes:
-      - ./:/notivize-diy
+      - sqlite-volume:/notivize-diy
+      - ./src:/notivize-diy/src
+      - ./.env:/notivize-diy/.env
   api:
     image: notivize-diy
     command:
@@ -19,6 +21,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./:/notivize-diy
+      - sqlite-volume:/notivize-diy
+      - ./src:/notivize-diy/src
+      - ./.env:/notivize-diy/.env
     depends_on:
       - migration
+
+volumes:
+  sqlite-volume:
