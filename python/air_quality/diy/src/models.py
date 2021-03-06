@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils import ChoiceType
 
 from .database import Base
+from .lib import gmail
 
 logger = logging.getLogger(__name__)
 
@@ -22,22 +23,27 @@ class User(Base):
 
     def send_welcome_email(self):
         # Here you would send the welcome email when the user is created
-        logging.info(f"Welcome {self.email}!")
+        gmail.send(message=f"Welcome {self.email}!", subject="Welcome!", to=self.email)
 
     def send_updated_email(self, previous_email):
         # Here you would send an email to let the user know of the updated email
-        logging.info(
-            f"To: {previous_email}\n"
-            "Subject: Your email has been updated\n"
-            f"Body: Your email has been updated to {self.email}. If you didn't make "
-            "that change, please reach at to us here: support@notivize.com\n"
+        gmail.send(
+            message=(
+                f"Your email has been updated to {self.email}. If you didn't make that "
+                "change, please reach at to us here: support@notivize.com"
+            ),
+            subject="Your email has been updated",
+            to=previous_email,
         )
+
         # And also ask them to verify their new email
-        logging.info(
-            f"To: {self.email}\n"
-            "Subject: Verify your email\n"
-            f"Body: Hi, please verify your email by clicking this link: "
-            "<a href='https://notivize.com/verify?email={self.email}'>Verify</a>\n"
+        gmail.send(
+            message=(
+                "Hi, please verify your email by clicking this link: "
+                f"<a href='https://notivize.com/verify?email={self.email}'>Verify</a>"
+            ),
+            subject="Verify your email",
+            to=self.email,
         )
 
 
@@ -118,14 +124,12 @@ class AQIAlertNotification(Base):
         if not current_aqi_value or current_aqi_value <= self.alert.threshold:
             return
 
-        # Here you would setup your channel integration, for example:
-        # mailchimp, sendgrid, twilio, etc.
-        logger.warning(
-            "\n\n"
-            f"To: {self.user.email}\n"
-            f"Subject: Air Quality Index {self.alert.level.title()}!\n"
-            f"{self.alert.level.title()}! Air quality index at {self.sensor.city}, "
-            f"{self.sensor.zone} is above its threshold ({self.alert.threshold}): "
-            f"{current_aqi_value}"
-            "\n\n"
+        gmail.send(
+            message=(
+                f"{self.alert.level.title()}! Air quality index at {self.sensor.city}, "
+                f"{self.sensor.zone} is above its threshold ({self.alert.threshold}): "
+                f"{current_aqi_value}"
+            ),
+            subject=f"Air Quality Index {self.alert.level.title()}!",
+            to=self.user.email,
         )
