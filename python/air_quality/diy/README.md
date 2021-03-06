@@ -108,4 +108,14 @@ Then you can explore the api (`cmd + click` to open video link in new tab):
 
 ## Reset
 
+### Docker
+
+Run the following command to delete your database:
+
+```bash
+docker-compose down
+docker volume rm diy_sqlite-volume
+```
+
+### Local
 You can start from scratch by simply deleting the `diy.db` file.
