@@ -31,7 +31,7 @@ Then, open up your favorite terminal and `cd` to `examples/python/air_quality/di
 
 ```bash
 pip install -r requirements.txt
-uvicorn src.api:app --reload
+./run.sh --reload
 ```
 
 ## Tutorial

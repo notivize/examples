@@ -9,7 +9,13 @@ from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(
+    title="Notivize DIY notifications",
+    description=(
+        "Showcases how painful can implementing your own "
+        "notification system be (without Notivize)!"
+    ),
+)
 
 
 # Dependency
