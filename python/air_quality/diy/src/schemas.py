@@ -23,11 +23,11 @@ class AQIAlertNotification(AQIAlertNotificationBase):
 class SensorBase(BaseModel):
     city: str
     zone: str
-    aqi: int
 
 
 class SensorPatch(BaseModel):
-    aqi: int
+    city: Optional[str]
+    zone: Optional[str]
 
 
 class SensorCreate(SensorBase):
@@ -35,6 +35,22 @@ class SensorCreate(SensorBase):
 
 
 class Sensor(SensorBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+
+class AQIBase(BaseModel):
+    sensor_id: int
+    value: int
+
+
+class AQICreate(AQIBase):
+    pass
+
+
+class AQI(AQIBase):
     id: int
 
     class Config:
@@ -67,6 +83,7 @@ class UserCreate(UserBase):
 
 class UserPatch(BaseModel):
     email: str
+
 
 class User(UserBase):
     id: int

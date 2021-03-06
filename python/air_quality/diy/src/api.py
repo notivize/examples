@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
@@ -73,19 +73,48 @@ def create_sensor(sensor: schemas.SensorCreate, db: Session = Depends(get_db)):
     return crud.create_sensor(db=db, sensor=sensor)
 
 
+@app.get("/aqis/", response_model=List[schemas.AQI])
+def read_aqis(
+    sensor_id: Optional[int] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    return crud.get_aqis(db, sensor_id, skip=skip, limit=limit)
+
+
+@app.get("/aqis/{aqi_id}", response_model=schemas.AQI)
+def read_aqi(aqi_id: int, db: Session = Depends(get_db)):
+    db_aqi = crud.get_aqi(db, aqi_id=aqi_id)
+    if db_aqi is None:
+        raise HTTPException(status_code=404, detail="AQI not found")
+    return db_aqi
+
+
 @app.patch("/sensors/{sensor_id}", response_model=schemas.Sensor)
 def update_sensor(
     sensor_id: int, sensor: schemas.SensorPatch, db: Session = Depends(get_db)
 ):
-    updated_sensor = crud.update_sensor(
+    return crud.update_sensor(
         db=db,
         sensor_id=sensor_id,
         update_data=sensor.dict(exclude_unset=True),
     )
-    for aqi_alert_notification in updated_sensor.aqi_alert_notifications:
-        aqi_alert_notification.maybe_send_notification()
 
-    return updated_sensor
+
+@app.post("/aqis/", response_model=schemas.AQI)
+def create_aqi(aqi: schemas.AQICreate, db: Session = Depends(get_db)):
+    current_aqi_value = crud.get_latest_aqi_value_by_sensor_id(db, aqi.sensor_id)
+    db_aqi = crud.create_aqi(db, aqi=aqi)
+
+    for aqi_alert_notification in (
+        db.query(models.AQIAlertNotification)
+        .filter(models.AQIAlertNotification.sensor_id == aqi.sensor_id)
+        .all()
+    ):
+        aqi_alert_notification.maybe_send_notification(db, current_aqi_value)
+
+    return db_aqi
 
 
 @app.get("/sensors/", response_model=List[schemas.Sensor])
