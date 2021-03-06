@@ -12,6 +12,7 @@ services:
     volumes:
       - sqlite-volume:/notivize-diy
       - ./src:/notivize-diy/src
+      - ./alembic:/notivize-diy/alembic
       - ./.env:/notivize-diy/.env
   api:
     image: notivize-diy
@@ -23,6 +24,7 @@ services:
     volumes:
       - sqlite-volume:/notivize-diy
       - ./src:/notivize-diy/src
+      - ./alembic:/notivize-diy/alembic
       - ./.env:/notivize-diy/.env
     depends_on:
       - migration
