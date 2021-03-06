@@ -1,14 +1,24 @@
 version: "3.9"
 services:
-  api:
+  migration:
     image: notivize-diy
     build:
       context: .
       dockerfile: Dockerfile
+    entrypoint:
+      - alembic
+      - upgrade
+      - head
+    volumes:
+      - ./:/notivize-diy
+  api:
+    image: notivize-diy
     command:
+      # XXX: Beware that you will need to `ctrl-c` twice to kill "docker-compose up" with the "reload" argument
       - --reload
     ports:
       - "8000:8000"
     volumes:
-      - ./src:/src
-      - .env:/.env
+      - ./:/notivize-diy
+    depends_on:
+      - migration
