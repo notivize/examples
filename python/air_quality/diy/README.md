@@ -8,11 +8,30 @@ This example shows you how hard it can be to get notifications right, even for s
 
 ### Setup
 
+By default, the url to visit is: https://127.0.0.1:8000/docs.
+
+#### Docker
+
+We assume that you have the latest version of [docker](https://docs.docker.com/get-docker/) installed.
+Then, open up your favorite terminal and `cd` to `examples/python/air_quality/diy`.
+
+```bash
+docker-compose up
+```
+
+If you use docker, the database will be seeded with 3 alerts ("info", "warning" and "alert") and 1 sensor.
+You can check at:
+- http://127.0.0.1:8000/sensors/
+- http://127.0.0.1:8000/aqi_alerts/
+
+#### Local machine
+
 We assume that you have a [virtual environment](https://docs.python.org/3/tutorial/venv.html) setup.
 Then, open up your favorite terminal and `cd` to `examples/python/air_quality/diy`.
 
 ```bash
 pip install -r requirements.txt
+uvicorn src.api:app --reload
 ```
 
 ## Tutorial
