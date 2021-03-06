@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  api:
+    image: notivize-diy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/src
+      - .env:/.env
