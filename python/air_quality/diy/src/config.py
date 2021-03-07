@@ -3,8 +3,8 @@ from pydantic import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./diy.db"
-    gmail_user: str = "arthur@notivize.com"
-    gmail_password: str
+    notivize_api_key: str
+    notivize_api_url: str = "https://events-api.notivize.com"
 
     class Config:
         env_file = ".env"
