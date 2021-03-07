@@ -110,7 +110,7 @@ class AQIAlertNotification(Base):
                 "phone": self.user.phone,
                 "aqi_alert_notification_id": self.id,
                 "alert_level": self.alert.level.title(),
-                "threshold": self.alert.threshold,
+                "aqi_greater_than_threshold": self.sensor.aqi > self.alert.threshold,
                 "aqi": self.sensor.aqi,
                 "city": self.sensor.city,
                 "zone": self.sensor.zone,
