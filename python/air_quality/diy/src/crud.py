@@ -55,6 +55,31 @@ def update_sensor(db: Session, sensor_id: int, update_data: dict) -> models.Sens
     return query.first()
 
 
+def get_aqi(db: Session, aqi_id: int) -> Optional[models.AQI]:
+    return db.query(models.AQI).filter(models.AQI.id == aqi_id).first()
+
+
+def get_latest_aqi_value_by_sensor_id(db: Session, sensor_id: int) -> Optional[int]:
+    return models.Sensor.current_aqi_value(db, sensor_id)
+
+
+def get_aqis(
+    db: Session, sensor_id: Optional[int] = None, skip: int = 0, limit: int = 100
+) -> List[models.AQI]:
+    filters = {}
+    if sensor_id is not None:
+        filters["sensor_id"] = sensor_id
+    return db.query(models.AQI).filter_by(**filters).offset(skip).limit(limit).all()
+
+
+def create_aqi(db: Session, aqi: schemas.AQICreate) -> models.AQI:
+    db_aqi = models.AQI(**aqi.dict())
+    db.add(db_aqi)
+    db.commit()
+    db.refresh(db_aqi)
+    return db_aqi
+
+
 def get_aqi_alerts(
     db: Session, skip: int = 0, limit: int = 100
 ) -> List[models.AQIAlert]:

@@ -1,7 +1,8 @@
 import logging
+from datetime import datetime
 
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Session, relationship
 from sqlalchemy_utils import ChoiceType
 
 from .database import Base
@@ -46,6 +47,17 @@ class User(Base):
         )
 
 
+class AQI(Base):
+    __tablename__ = "aqi_values"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sensor_id = Column(Integer, ForeignKey("sensors.id"))
+    value = Column(Integer)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    sensor = relationship("Sensor", back_populates="aqis")
+
+
 class Sensor(Base):
     __tablename__ = "sensors"
 
@@ -57,6 +69,21 @@ class Sensor(Base):
     aqi_alert_notifications = relationship(
         "AQIAlertNotification", back_populates="sensor"
     )
+    aqi_values = relationship(
+        "AQIAlertNotification", back_populates="sensor", lazy="dynamic"
+    )
+
+    @classmethod
+    def current_aqi_value(cls, db: Session, sensor_id: int):
+        current_aqi_value = (
+            db.query(AQI.value)
+            .filter(AQI.sensor_id == sensor_id)
+            .order_by(AQI.created_at.desc())
+            .first()
+        )
+        return current_aqi_value.value if current_aqi_value else None
+
+    aqis = relationship("AQI", back_populates="sensor")
 
 
 class AQIAlert(Base):
@@ -85,15 +112,23 @@ class AQIAlertNotification(Base):
     sensor = relationship("Sensor", back_populates="aqi_alert_notifications")
     alert = relationship("AQIAlert", back_populates="aqi_alert_notifications")
 
-    def maybe_send_notification(self):
-        if self.sensor.aqi <= self.alert.threshold:
+    def maybe_send_notification(self, db: Session, previous_aqi_value):
+        # If the previous aqi was already above the threshold we don't want to send
+        # a notification again
+        if previous_aqi_value and previous_aqi_value > self.alert.threshold:
+            return
+
+        # If the new aqi is under the threshold, don't send a notification
+
+        current_aqi_value = Sensor.current_aqi_value(db, self.sensor_id)
+        if not current_aqi_value or current_aqi_value <= self.alert.threshold:
             return
 
         gmail.send(
             message=(
                 f"{self.alert.level.title()}! Air quality index at {self.sensor.city}, "
                 f"{self.sensor.zone} is above its threshold ({self.alert.threshold}): "
-                f"{self.sensor.aqi}"
+                f"{current_aqi_value}"
             ),
             subject=f"Air Quality Index {self.alert.level.title()}!",
             to=self.user.email,
